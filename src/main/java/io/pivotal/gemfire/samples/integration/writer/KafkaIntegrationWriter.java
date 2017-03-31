@@ -3,18 +3,18 @@ package io.pivotal.gemfire.samples.integration.writer;
 
 import io.pivotal.gemfire.samples.model.key.PersonKey;
 import io.pivotal.gemfire.samples.model.pdx.Person;
-import org.apache.geode.cache.CacheWriter;
-import org.apache.geode.cache.CacheWriterException;
-import org.apache.geode.cache.EntryEvent;
-import org.apache.geode.cache.RegionEvent;
+import org.apache.geode.cache.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
+
+import javax.annotation.Resource;
 
 
 public class KafkaIntegrationWriter implements CacheWriter<PersonKey, Person> {
 
     @Autowired
-    KafkaTemplate<PersonKey, Person> kafkaTemplate;
+    KafkaTemplate<String, Person> kafkaTemplate;
+
 
     @Override
     public void beforeUpdate(EntryEvent<PersonKey, Person> event) throws CacheWriterException {
@@ -24,7 +24,7 @@ public class KafkaIntegrationWriter implements CacheWriter<PersonKey, Person> {
 
         if (personOld != null) { //should be used for something like timestamp for conflict resolution
             System.out.println("This is an update. Sending new data to kafka");
-            kafkaTemplate.sendDefault(personKey, personNew);
+            kafkaTemplate.sendDefault(personKey.toString(), personNew);
         }
     }
 
@@ -32,8 +32,7 @@ public class KafkaIntegrationWriter implements CacheWriter<PersonKey, Person> {
     public void beforeCreate(EntryEvent<PersonKey, Person> event) throws CacheWriterException {
         PersonKey personKey = event.getKey();
         Person person = event.getNewValue();
-
-        kafkaTemplate.sendDefault(personKey, person);
+        kafkaTemplate.send("person", personKey.toString(), person);
     }
 
     @Override

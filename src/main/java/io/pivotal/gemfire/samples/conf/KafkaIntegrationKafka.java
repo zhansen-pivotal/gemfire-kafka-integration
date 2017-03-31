@@ -16,7 +16,7 @@ import java.util.Map;
 public class KafkaIntegrationKafka {
 
     @Bean
-    public ProducerFactory<PersonKey, Person> producerFactory() {
+    public ProducerFactory<String, Person> producerFactory() {
         return new DefaultKafkaProducerFactory<>(producerConfigs());
     }
 
@@ -25,11 +25,12 @@ public class KafkaIntegrationKafka {
         Map<String, Object> props = new HashedMap();
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         props.put(ProducerConfig.BATCH_SIZE_CONFIG, 100);
+        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,"org.apache.kafka.common.serialization.StringSerializer");
         return props;
     }
 
     @Bean
-    public KafkaTemplate<PersonKey, Person> kafkaTemplate() {
+    public KafkaTemplate<String, Person> kafkaTemplate() {
         return new KafkaTemplate<>(producerFactory());
     }
 }
