@@ -13,7 +13,7 @@ import javax.annotation.Resource;
 public class KafkaIntegrationWriter implements CacheWriter<PersonKey, Person> {
 
     @Autowired
-    KafkaTemplate<String, Person> kafkaTemplate;
+    KafkaTemplate kafkaTemplate;
 
 
     @Override
@@ -24,7 +24,7 @@ public class KafkaIntegrationWriter implements CacheWriter<PersonKey, Person> {
 
         if (personOld != null) { //should be used for something like timestamp for conflict resolution
             System.out.println("This is an update. Sending new data to kafka");
-            kafkaTemplate.sendDefault(personKey.toString(), personNew);
+            kafkaTemplate.sendDefault(personKey.toString(), personNew.toString());
         }
     }
 
@@ -32,7 +32,7 @@ public class KafkaIntegrationWriter implements CacheWriter<PersonKey, Person> {
     public void beforeCreate(EntryEvent<PersonKey, Person> event) throws CacheWriterException {
         PersonKey personKey = event.getKey();
         Person person = event.getNewValue();
-        kafkaTemplate.send("person", personKey.toString(), person);
+        kafkaTemplate.send("person", personKey.toString(), person.toString());
     }
 
     @Override
